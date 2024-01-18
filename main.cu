@@ -26,7 +26,8 @@ int main(int argc, const char** argv) {
 
   if(argc < 3) {
     std::cout << "Usage:" << std::endl;
-    std::cout << "levcuda [target string filepath] [source string filepath] (-v)" << std::endl;
+    std::cout << "  levcuda [target string filepath] [source string filepath] (-v)" << std::endl;
+    std::cout << "  -v: verbose" << std::endl;
     return EXIT_FAILURE;
   }
 

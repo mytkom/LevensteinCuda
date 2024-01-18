@@ -27,30 +27,30 @@ void CpuCalculator::Calculate() {
 } 
 
 std::vector<std::string> CpuCalculator::GetTransformations() {
-    std::vector<std::string> list = std::vector<std::string>();
+    std::vector<std::string> transformations = std::vector<std::string>();
     int i = m, j = n;
 
     while(i > 0 || j > 0) {
         if (i > 0 && dMatrix[i][j] == dMatrix[i - 1][j] + 1) {
-            list.push_back(std::string("Delete "+ std::string(1,s2[i - 1]) + " at " + std::to_string(i - 1)));
+            transformations.push_back("Delete "+ std::string(1,s2[i - 1]) + " at " + std::to_string(i - 1));
             i--;
         }
         else if(j > 0 && dMatrix[i][j] == dMatrix[i][j - 1] + 1) {
-            list.push_back(std::string("Insert "+ std::string(1,s1[j - 1]) + " at " + std::to_string(j - 1)));
+            transformations.push_back("Insert "+ std::string(1,s1[j - 1]) + " at " + std::to_string(j - 1));
             j--;
         }
         else {
             if(i > 0 && j > 0 && dMatrix[i][j] == dMatrix[i - 1][j - 1] + 1) {
                 if(s1[i - 1] != s2[j - 1]) {
-                    list.push_back(std::string("Substitute "+ std::string(1,s2[i - 1]) + " at " + std::to_string(i - 1)
-                     + " with " + std::string(1,s2[j - 1])));
+                    transformations.push_back("Substitute "+ std::string(1,s2[i - 1]) + " at " + std::to_string(i - 1)
+                     + " with " + std::string(1,s2[j - 1]));
                 }   
             }
             i--;
             j--;
         }
     }
-    return list;
+    return transformations;
 } 
 
 void CpuCalculator::Print() {
