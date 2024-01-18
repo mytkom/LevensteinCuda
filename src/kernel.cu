@@ -25,19 +25,21 @@ __global__ void calculateDMatrix(int *dMatrix, int *xMatrix, const char *s1, con
 
   if(i > n) return;
 
-  // get Bvar (previous Dvar) from global memory
-  Bvar = dMatrix[(j-1)*(n+1) + i];
+  if(j > 0) {
+    // get Bvar (previous Dvar) from global memory
+    Bvar = dMatrix[(j-1)*(n+1) + i];
+
+    // get Alphabet array index
+    l = charToAlphIndex[s2[j-1]];
+
+    // intra warp Bvar obtaining
+    Avar = __shfl_up_sync(FULL_MASK, Bvar, 1);
+  }
 
   // if last thread - save Bvar to shared memory
   if(tid % THREADS_IN_WARP == THREADS_IN_WARP - 1) {
     interWarpMemory[tid/THREADS_IN_WARP] = Bvar;
   }
-
-  // get Alphabet array index
-  l = charToAlphIndex[s2[j-1]];
-
-  // intra warp Bvar obtaining
-  Avar = __shfl_up_sync(FULL_MASK, Bvar, 1);
 
   // make sure all warps in block has written to shared memory
   __syncthreads();
