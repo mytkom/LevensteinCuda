@@ -1,0 +1,48 @@
+#pragma once
+
+#include <iostream>
+#include <string>
+#include <vector>
+#include <cstdio>
+#include "cuda.h"
+#include "cuda_runtime.h"
+#include "kernel.h"
+#include "calculator.hpp"
+
+#ifndef HANDLE_ERROR
+
+static void HandleError(cudaError_t err, const char* file, int line)
+{
+  if (err != cudaSuccess)
+  {
+    printf("%s in %s at line %d\n", cudaGetErrorString(err),
+        file, line);
+    exit(EXIT_FAILURE);
+  }
+}
+
+#define HANDLE_ERROR( err ) (HandleError( err, __FILE__, __LINE__ ));
+
+#endif
+
+#define REMAP_ARRAY_LENGTH 256
+#define BLOCK_SIZE 64
+
+class GpuCalculator : Calculator {
+  public:
+    int *dMatrix;
+    GpuCalculator(const std::string &s1, const std::string &s2, const unsigned char* alphabet, int alphabetLength) : Calculator(s1, s2) {
+      this->alphabetLength = alphabetLength; 
+      this->alphabet = alphabet;
+
+      for(int i = 0; i < alphabetLength; ++i)
+        charToAlphabetIndex[alphabet[i]] = i; 
+    }
+    void Calculate(); 
+    std::vector<std::string> GetTransformations(); 
+    void Print(); 
+
+  private:
+    int alphabetLength, charToAlphabetIndex[REMAP_ARRAY_LENGTH];
+    const unsigned char* alphabet;
+};

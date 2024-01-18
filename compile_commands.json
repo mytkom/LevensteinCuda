@@ -1,0 +1,20 @@
+[
+  {
+    "arguments": [
+      "/nix/store/6mzsg2rsl2qf4fl11yah8z7bqj1s9rq4-cudatoolkit-11.8.0/bin/nvcc",
+      "-c",
+      "main.cu"
+    ],
+    "directory": "/home/mytkom/Documents/LevensteinCuda",
+    "file": "/home/mytkom/Documents/LevensteinCuda/main.cu"
+  },
+  {
+    "arguments": [
+      "/nix/store/6mzsg2rsl2qf4fl11yah8z7bqj1s9rq4-cudatoolkit-11.8.0/bin/nvcc",
+      "-c",
+      "kernel.cu"
+    ],
+    "directory": "/home/mytkom/Documents/LevensteinCuda",
+    "file": "/home/mytkom/Documents/LevensteinCuda/kernel.cu"
+  }
+]
