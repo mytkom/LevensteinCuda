@@ -1,7 +1,7 @@
 #include "gpu_calculator.hpp"
 
 void GpuCalculator::Calculate() {
-  int xMatrixLength = (n + 1) * alphabetLength, dMatrixLength = (n + 1) * (m + 1);
+  int alphabetSize = alphabet.length(), xMatrixLength = (n + 1) * alphabetSize, dMatrixLength = (n + 1) * (m + 1);
   int *xMatrix = new int[xMatrixLength], *d_xMatrix, *d_dMatrix, *d_charToAlphIndex;
   char *d_s1, *d_s2, *d_alphabet;
 
@@ -16,13 +16,13 @@ void GpuCalculator::Calculate() {
   HANDLE_ERROR(cudaMemcpy(d_s1, s1.c_str(), sizeof(char) * n, cudaMemcpyHostToDevice));
   HANDLE_ERROR(cudaMalloc((void**) &d_s2, sizeof(char) * m));
   HANDLE_ERROR(cudaMemcpy(d_s2, s2.c_str(), sizeof(char) * m, cudaMemcpyHostToDevice));
-  HANDLE_ERROR(cudaMalloc((void**) &d_alphabet, sizeof(char) * alphabetLength));
-  HANDLE_ERROR(cudaMemcpy(d_alphabet, alphabet, sizeof(char) * alphabetLength, cudaMemcpyHostToDevice));
+  HANDLE_ERROR(cudaMalloc((void**) &d_alphabet, sizeof(char) * alphabetSize));
+  HANDLE_ERROR(cudaMemcpy(d_alphabet, alphabet.c_str(), sizeof(char) * alphabetSize, cudaMemcpyHostToDevice));
   HANDLE_ERROR(cudaMalloc((void**) &d_charToAlphIndex, sizeof(int) * REMAP_ARRAY_LENGTH));
   HANDLE_ERROR(cudaMemcpy(d_charToAlphIndex, charToAlphabetIndex, sizeof(int) * REMAP_ARRAY_LENGTH, cudaMemcpyHostToDevice));
 
   // Calculate X matrix
-  calculateXMatrix<<<1, alphabetLength>>>(d_xMatrix, d_s1, d_alphabet, n);
+  calculateXMatrix<<<1, alphabetSize>>>(d_xMatrix, d_s1, d_alphabet, n);
   HANDLE_ERROR(cudaDeviceSynchronize());
 
   int blockCount = ((n+1) % BLOCK_SIZE) > 0 ? (n+1)/BLOCK_SIZE + 1 : (n+1)/BLOCK_SIZE;

@@ -3,8 +3,7 @@
 #include <vector>
 #include <memory>
 #include <algorithm>
-#include <time.h>
-#include <sys/time.h>
+#include <chrono>
 #include <unistd.h>
 #include "cuda.h"
 #include "cuda_runtime.h"
@@ -13,25 +12,28 @@
 #include "gpu_calculator.hpp"
 #include "kernel.h"
 
-unsigned char alphabet[] = {
-  'A', 'C', 'G', 'T'
-};
-const int alphabetLength = sizeof(alphabet);
+std::string alphabet = "ACGT";
 
 int main(int argc, const char** argv) {
-  struct timeval startc, end;
-  long seconds, useconds;
-  double mtime;
   bool isDMatricesIdentical = true, verbose = false, isCuda = false;
 
   if(argc < 3) {
     std::cout << "Usage:" << std::endl;
-    std::cout << "  levcuda [target string filepath] [source string filepath] (-v)" << std::endl;
+    std::cout << "  levcuda [target string filepath] [source string filepath] (-v|-a arg)" << std::endl;
     std::cout << "  -v: verbose" << std::endl;
+    std::cout << "  -a [filepath to alphabet]: specify different alphabet" << std::endl;
     return EXIT_FAILURE;
   }
 
-  if(argc > 3 && strcmp(argv[3], "-v") == 0) verbose = true;
+  for(int i = 3; i < argc; ++i)
+  {
+    if(strcmp(argv[i], "-v") == 0) {
+      verbose = true;
+    } else if(strcmp(argv[i], "-a") == 0 && argc != i + 1) {
+      alphabet = read_file(argv[i+1]);
+      i++;
+    }
+  }
 
   std::string s1 = read_file(argv[1]);
   std::string s2 = read_file(argv[2]);
@@ -45,17 +47,13 @@ int main(int argc, const char** argv) {
   std::cout << "CPU calculation in progress" << std::endl;
   
   CpuCalculator calc(s1, s2);
-  gettimeofday(&startc, NULL);
+
+  auto tic = std::chrono::high_resolution_clock::now();
   calc.Calculate();
-  gettimeofday(&end, NULL);
+  auto toc = std::chrono::high_resolution_clock::now();
+  std::chrono::duration<double, std::milli> cpuTime = toc - tic;
 
-  seconds  = end.tv_sec  - startc.tv_sec;
-  useconds = end.tv_usec - startc.tv_usec;
-  mtime = useconds;
-  mtime/=1000;
-  mtime+=seconds*1000;
-
-  std::cout << "CPU ms: " << mtime << std::endl;
+  std::cout << "CPU ms: " << cpuTime.count() << std::endl;
 
   if(verbose) calc.Print();
   std::vector<std::string> transformationsStrings = calc.GetTransformations();
@@ -64,9 +62,9 @@ int main(int argc, const char** argv) {
   // Gpu calculation if Gpu available
   if (isCuda = (cudaSetDevice(0) == cudaSuccess)) {
     std::cout << std::endl << "GPU calculation in progress" << std::endl;
-    GpuCalculator gpuCalc(s1, s2, alphabet, alphabetLength);
+    GpuCalculator gpuCalc(s1, s2, alphabet);
 
-    float ms;
+    float gpuTime;
     cudaEvent_t start,stop;
     cudaEventCreate(&start);
     cudaEventCreate(&stop);
@@ -74,8 +72,10 @@ int main(int argc, const char** argv) {
     gpuCalc.Calculate();
     cudaEventRecord(stop, 0);
     cudaEventSynchronize(stop);
-    cudaEventElapsedTime(&ms, start, stop);
-    std::cout << "GPU ms: " << ms << std::endl;
+    cudaEventElapsedTime(&gpuTime, start, stop);
+
+    std::cout << "GPU ms: " << gpuTime << std::endl;
+    std::cout << "CPU/GPU ratio: " << cpuTime.count()/gpuTime << std::endl;
 
     if(verbose) gpuCalc.Print();
     transformationsStrings = gpuCalc.GetTransformations();

@@ -26,16 +26,15 @@ static void HandleError(cudaError_t err, const char* file, int line)
 #endif
 
 #define REMAP_ARRAY_LENGTH 256
-#define BLOCK_SIZE 64
+#define BLOCK_SIZE 512
 
 class GpuCalculator : Calculator {
   public:
     int *dMatrix;
-    GpuCalculator(const std::string &s1, const std::string &s2, const unsigned char* alphabet, int alphabetLength) : Calculator(s1, s2) {
-      this->alphabetLength = alphabetLength; 
+    GpuCalculator(const std::string &s1, const std::string &s2, std::string &alphabet) : Calculator(s1, s2) {
       this->alphabet = alphabet;
 
-      for(int i = 0; i < alphabetLength; ++i)
+      for(int i = 0; i < alphabet.length(); ++i)
         charToAlphabetIndex[alphabet[i]] = i; 
     }
     void Calculate(); 
@@ -43,6 +42,6 @@ class GpuCalculator : Calculator {
     void Print(); 
 
   private:
-    int alphabetLength, charToAlphabetIndex[REMAP_ARRAY_LENGTH];
-    const unsigned char* alphabet;
+    int charToAlphabetIndex[REMAP_ARRAY_LENGTH];
+    std::string alphabet;
 };
